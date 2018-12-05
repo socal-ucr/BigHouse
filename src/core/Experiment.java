@@ -41,6 +41,7 @@ import java.util.Vector;
 import stat.Statistic;
 import stat.StatisticsCollection;
 import datacenter.DataCenter;
+import datacenter.DataCenter.ClusterScheduler;
 import datacenter.Server;
 import core.RegDHandler;
 
@@ -106,6 +107,11 @@ public final class Experiment implements Serializable, Cloneable {
     private boolean stop;
 
     /**
+     * If flag is set, we're running search workload. Scale all service stats by 10 to converge faster.
+     */ 	 
+    private boolean searchWorkload;
+
+    /**
      * Constructs a new experiment.
      *
      * @param theExperimentName - the name of the experiment
@@ -126,6 +132,15 @@ public final class Experiment implements Serializable, Cloneable {
         this.exprimentOutput = thExperimentOutput;
         this.eventQueue = new EventQueue();
         this.stopAtSteadyState = false;
+	this.searchWorkload = false;
+    }
+
+    public void setSearchWorkload(final boolean search) {
+	this.searchWorkload = search;
+    } 
+
+    public boolean getSearchWorkload() {
+	return this.searchWorkload;
     }
 
     /**
@@ -212,11 +227,11 @@ public final class Experiment implements Serializable, Cloneable {
 	long elapsedTime = 0;
 
         this.nEventsProccessed = 0;
-        Sim.printBanner();
+        //Sim.printBanner();
         System.out.println("Starting simulation");
         //TODO fix magic numbers
-        int orderOfMag = 5;
-        long printSamples = (long) Math.pow(10, orderOfMag);
+        //int orderOfMag = 5;
+        long printSamples = 100000;//(long) Math.pow(10, orderOfMag);
         while (!stop) {
 	    curTime = System.currentTimeMillis();
 	    elapsedTime = curTime - startTime;
@@ -252,8 +267,8 @@ public final class Experiment implements Serializable, Cloneable {
                         currentStat.printStatInfo();
                     }
                 }
-                orderOfMag++;
-                printSamples = (long) Math.pow(10, orderOfMag);
+                //orderOfMag++;
+                printSamples += 100000;//(long) Math.pow(10, orderOfMag);
             }
 
             if (this.getStats().allStatsConverged()) {
@@ -334,4 +349,11 @@ public final class Experiment implements Serializable, Cloneable {
         this.stop = true;
     }
 
+    public DataCenter getDataCenter() {
+        return this.experimentInput.getDataCenter();
+    }
+
+    public ClusterScheduler getClusterScheduler() {
+        return this.dataCenter.getClusterScheduler();
+    }
 }
