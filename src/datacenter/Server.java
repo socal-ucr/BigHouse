@@ -148,7 +148,7 @@ public class Server implements Powerable, Serializable {
 
     public boolean searchWorkload;
 
-
+    /**
      * A lookup table for power consumption given a utilization of 0-1; used 
      * in getDynamicPower()
      */

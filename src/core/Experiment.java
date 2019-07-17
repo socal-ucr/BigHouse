@@ -159,6 +159,7 @@ public final class Experiment implements Serializable, Cloneable {
     public void initialize() {
 	// get regulation signals from file and populate arrays
 	RegDHandler.getRegDFromFile("reg-d.csv"); 
+	RhoTraceImport.getRhoTraceFromFile("RhoTrace1.csv");
 	
         this.dataCenter = this.experimentInput.getDataCenter();
         Vector<Server> servers = dataCenter.getServers();

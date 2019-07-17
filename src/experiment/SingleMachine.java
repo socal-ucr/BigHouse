@@ -200,7 +200,14 @@ public class SingleMachine {
 	}*/
 	public static void main(String[] args) {
 		SingleMachine exp  = new SingleMachine();
+		System.out.print("args[0]: ");
+		System.out.println(args[0]);
 
+		System.out.print("args[1]: ");
+		System.out.println(args[1]);
+
+		System.out.print("args[2]: ");
+		System.out.println(args[2]);
 		exp.run(args[0],args[1],Double.valueOf(args[2]));
 
 		//exp.getCSV("reg-d.csv");
