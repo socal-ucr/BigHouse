@@ -157,10 +157,11 @@ public final class Experiment implements Serializable, Cloneable {
      * This entails priming every server with an initial arrival event.
      */
     public void initialize() {
-	// get regulation signals from file and populate arrays
+	// Import data and populate class static structures
 	RegDHandler.getRegDFromFile("reg-d.csv"); 
 	RhoTraceImport.getRhoTraceFromFile("RhoTrace1.csv");
-	
+	RegulationMarket.importTraces();	
+
         this.dataCenter = this.experimentInput.getDataCenter();
         Vector<Server> servers = dataCenter.getServers();
         // Make sure all the arrival processes have begun
@@ -226,6 +227,8 @@ public final class Experiment implements Serializable, Cloneable {
 	long checkRegDTime = 5000; // start at 5 seconds 
 	long curTime= 0;
 	long elapsedTime = 0;
+	double regDSignal = 0.0;
+	double dcConsumption = 0.0;
 
         this.nEventsProccessed = 0;
         //Sim.printBanner();
@@ -237,12 +240,17 @@ public final class Experiment implements Serializable, Cloneable {
 	    curTime = System.currentTimeMillis();
 	    elapsedTime = curTime - startTime;
 	    if(elapsedTime > checkRegDTime) {
-		System.out.print("Regulation-D signal at ");
+		regDSignal = RegDHandler.getRegDSignal(elapsedTime);
+		System.out.print("\nRegulation-D signal at ");
 		System.out.print((elapsedTime-1) / 1000);
 		System.out.print(" seconds is: ");
-		System.out.print(RegDHandler.getRegDSignal(elapsedTime));
+		System.out.print(regDSignal);
 		System.out.print("\n");
 		checkRegDTime += 5000;
+
+		dcConsumption = this.dataCenter.getDataCenterPowerConsumption();
+		System.out.println("Cost of operating: "+Double.toString(RegulationMarket.getCostofConsumption(dcConsumption,elapsedTime)));
+		System.out.println("Reward: "+Double.toString(RegulationMarket.getReward(regDSignal)));
 	    }
 	    
             Event currentEvent = this.eventQueue.nextEvent();
