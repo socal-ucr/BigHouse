@@ -616,7 +616,7 @@ public class Server implements Powerable, Serializable {
      *
      * @return the power consumption of the cpu (in watts)
      */
-     private double getPowerConsumption(double util) {
+     public double getPowerConsumption(double util) {
 	if(powerConsumptionTable.containsKey(util)) {
 		return powerConsumptionTable.get(util);
 	}
