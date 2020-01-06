@@ -159,7 +159,6 @@ public final class Experiment implements Serializable, Cloneable {
     public void initialize() {
 	// Import data and populate class static structures
 	RegDHandler.getRegDFromFile("reg-d.csv"); 
-	RhoTraceImport.getRhoTraceFromFile("RhoTrace1.csv");
 	RegulationMarket.importTraces();	
 
         this.dataCenter = this.experimentInput.getDataCenter();
@@ -224,10 +223,11 @@ public final class Experiment implements Serializable, Cloneable {
     public void run() {
         this.initialize();
         long startTime = System.currentTimeMillis();
-	long checkRegDTime = 5000; // start at 5 seconds 
-	long curTime= 0;
-	long elapsedTime = 0;
-	double regDSignal = 0.0;
+	double curTime = 0.0;
+	
+        boolean havePrinted = false;
+        double regDVal = 0.0;
+        double regDValPrev = 0.0;
 	double dcConsumption = 0.0;
 
         this.nEventsProccessed = 0;
@@ -237,26 +237,52 @@ public final class Experiment implements Serializable, Cloneable {
         //int orderOfMag = 5;
         long printSamples = 100000;//(long) Math.pow(10, orderOfMag);
         while (!stop) {
-	    curTime = System.currentTimeMillis();
-	    elapsedTime = curTime - startTime;
-	    if(elapsedTime > checkRegDTime) {
+	    //curTime = System.currentTimeMillis();
+	    //elapsedTime = curTime - startTime;
+	    /*(if(elapsedTime > checkRegDTime) {
 		regDSignal = RegDHandler.getRegDSignal(elapsedTime);
 		System.out.print("\nRegulation-D signal at ");
 		System.out.print((elapsedTime-1) / 1000);
 		System.out.print(" seconds is: ");
 		System.out.print(regDSignal);
 		System.out.print("\n");
+		//System.out.println("Simulation time: " + this.currentTime);
 		checkRegDTime += 5000;
 
 		dcConsumption = this.dataCenter.getDataCenterPowerConsumption();
 		System.out.println("Cost of operating: "+Double.toString(RegulationMarket.getCostofConsumption(dcConsumption,elapsedTime)));
-		System.out.println("Reward: "+Double.toString(RegulationMarket.getReward(regDSignal)));
-	    }
-	    
+		System.out.println("Reward: "+Double.toString(RegulationMarket.getReward(regDSignal))+"\n");
+	    }*/
+	    //System.out.println("Simulation time: " + this.currentTime);
             Event currentEvent = this.eventQueue.nextEvent();
             this.currentTime = currentEvent.getTime();
             currentEvent.process();
             this.nEventsProccessed++;
+
+            // Added by mmira014
+            // Print market statistics every 5 seconds
+            curTime = (int)this.currentTime;
+            if (curTime % 5 == 0) {
+              if(havePrinted) {
+                // do nothing; already printed
+              }
+              else {
+                regDVal = RegDHandler.getRegDSignal(curTime);
+                dcConsumption = this.dataCenter.getDataCenterPowerConsumption();
+              
+                System.out.println("\nRegulation D signal at " + curTime + " seconds is: " + regDVal + "\n");
+		System.out.println("Data center power consumption: " + dcConsumption);
+                System.out.println("Cost of operating: " + RegulationMarket.getCostofConsumption(dcConsumption, curTime)); 
+                System.out.println("Reward: " + RegulationMarket.getReward(curTime,regDVal,regDValPrev) + "\n");
+                havePrinted = true;
+                regDValPrev = regDVal;
+              }
+            }
+            // reset havePrinted flag back to false
+            if(curTime % 5 > 0 && havePrinted) {
+              havePrinted = false;
+            }
+     
 	    //Added by wongdani
 	    this.dataCenter.updateStatistics(this.currentTime);
             if (this.nEventsProccessed > printSamples) {
