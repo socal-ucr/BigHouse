@@ -237,9 +237,9 @@ public class DreamWeaverServer extends PowerNapServer {
         super.transistionToActive(time);
     }
 
-    @Override
+    //@Override
     public void transistionToNap(final double time) {
-        super.transistionToNap(time);
+        //super.transistionToNap(time);
         // Make sure to schedule timeouts for jobs
         ArrayList<Socket> sockets = this.getSockets();
         for (int i = 0; i < sockets.size(); i++) {
