@@ -34,6 +34,7 @@ import generator.Generator;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.TreeMap;
 import java.util.LinkedList;
 import java.util.ArrayList; 
 import java.util.Iterator;
@@ -46,6 +47,7 @@ import core.Experiment;
 import core.Job;
 import core.JobArrivalEvent;
 import core.Sim;
+import core.DataImport;
 import core.Constants.StatName;
 import datacenter.Core.CorePowerPolicy;
 import datacenter.Socket.SocketPowerPolicy;
@@ -152,7 +154,7 @@ public class Server implements Powerable, Serializable {
      * A lookup table for power consumption given a utilization of 0-1; used 
      * in getDynamicPower()
      */
-     private static HashMap<Double, Double> powerConsumptionTable = new HashMap(); 
+     private static TreeMap<Double, Double> powerConsumptionTable = new TreeMap(); 
 
 
     /**
@@ -189,7 +191,7 @@ public class Server implements Powerable, Serializable {
 	this.peakEfficiency = 100.0/this.getMaxPower();
 	this.searchWorkload = this.experiment.getSearchWorkload();
 
-
+	/*
 	powerConsumptionTable.put(0.0,0.0);
 	powerConsumptionTable.put(0.0009, 21.5354);
 	powerConsumptionTable.put(0.0455, 36.0738);
@@ -214,7 +216,8 @@ public class Server implements Powerable, Serializable {
 	powerConsumptionTable.put(0.9091, 82.0283);
 	powerConsumptionTable.put(0.9545, 83.3915);
 	powerConsumptionTable.put(1.0, 84.8922);
-
+	*/
+	powerConsumptionTable = DataImport.importPowerConsumptionData("AvgPower.csv");
     }
 
     /**
@@ -618,6 +621,7 @@ public class Server implements Powerable, Serializable {
      */
      public double getPowerConsumption(double util) {
 	if(powerConsumptionTable.containsKey(util)) {
+		//System.out.println("Clean util:"+util);
 		return powerConsumptionTable.get(util);
 	}
 	else if(util > 1.0) {
@@ -632,11 +636,12 @@ public class Server implements Powerable, Serializable {
 	}
 	else {
 	// we have an 'ugly' util value
-	// so return an approximated value
+	// so return an approximated value assuming linear utilization-consumption relationship
+	        //System.out.println("ugly util:"+util);
 		double arrOfLimits[] = getLimits(util);
 		double top = arrOfLimits[0];
 		double bottom = arrOfLimits[1];
-
+		//System.out.println("bottom:"+bottom+", top:"+top);
 		// find slope of line
 		double y2 = powerConsumptionTable.get(top); // y2 stores powerCons of top util 
 		double y1 = powerConsumptionTable.get(bottom); // y1 stores powerCons of bottom util
@@ -662,6 +667,7 @@ public class Server implements Powerable, Serializable {
 	// iterates through hashmap until current entry is larger than target, then
 	// saves current/previous entries as top/lower limits of target respectively
 	for(double mapEntry: powerConsumptionTable.keySet() ) {
+		//System.out.println("Check key:"+mapEntry);
 		if(mapEntry > target) {
 			top = mapEntry; 
 			bottom = prevMapEntry;
