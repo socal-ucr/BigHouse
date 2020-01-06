@@ -13,7 +13,7 @@ public class RegDHandler {
     /**
      * An array containing the timestamps present in the regulation-D signal file.
      */
-     private static ArrayList<Long> timeStamps = new ArrayList<Long>();
+     private static ArrayList<Double> timeStamps = new ArrayList<Double>();
 
     /**
      * An array containing the regulation-D values present in the regulation-D signal file.
@@ -32,7 +32,7 @@ public class RegDHandler {
 	String csvSplitChar = ",";
 	BufferedReader bufReader = null;
 		
-	String timeInSec = "";
+	String timeStr = "";
 	Date date = new Date();
 	SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -45,10 +45,10 @@ public class RegDHandler {
 			}
 			else {
 				//getLine[0] is in sec
-				timeInSec = getLine[0];	
-				date = sdf.parse("1970-01-01 " + timeInSec);
+				timeStr = getLine[0];	
+				date = sdf.parse("1970-01-01 " + timeStr);
 				
-				timeStamps.add(date.getTime() - 28800000); // subtract for timezone diff
+				timeStamps.add((double)(date.getTime() - 28800000)/1000); // subtract for timezone diff
 				regValues.add(Double.parseDouble(getLine[1]) );
 			}
 		}
@@ -57,7 +57,7 @@ public class RegDHandler {
 		/*for(int i = 0; i < timeStamps.size(); ++i) {
 			System.out.println(timeStamps.get(i) + ", " + regValues.get(i));
 		}*/
-		System.out.println("End of values");
+		//System.out.println("End of values");
 	} catch (IOException e) {
 		e.printStackTrace();
 	} catch (ParseException e) {
@@ -67,20 +67,21 @@ public class RegDHandler {
 	
     /**
      * Gets the regulation-D signal corresponding to the given time
+     * If no entry in map exists for the time, fetches regulation-D signal for next closest timeStamp
      *
-     * @param time - the time for which we want to get the reg D signal
+     * @param time - the time in seconds for which we want to get the reg D signal
      *
      * @return the regD value corresponding to <time>
      */
-     public static double getRegDSignal(long time) {
+     public static double getRegDSignal(double time) {
 	if(regValues.isEmpty() || timeStamps.isEmpty()) {
 		System.out.println("Error fetching regulation signal; array is empty!");
 		System.exit(1);
 	}
 	boolean done = false;
-	long diff = timeStamps.get(1) - timeStamps.get(0); // time difference between subsequent timeStamps
-	long maxTime = timeStamps.get(timeStamps.size() - 1);
-	long currentTime = 0;
+	double diff = timeStamps.get(1) - timeStamps.get(0); // time difference between subsequent timeStamps
+	double maxTime = timeStamps.get(timeStamps.size() - 1);
+	double currentTime = 0.0;
 	int index = 0;
 
 	while(!done) {
