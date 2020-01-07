@@ -64,7 +64,6 @@ public class RegulationMarket {
     ccp = pcp = mileage = r = performanceScore = reward = 0.0;
 
     // Reward = (CCP + PCP * Mileage) * R * Performance Score
-    // Mileage = |D1 - D2|
     try {
       time = Math.floor(time / 3600) * 3600; // normalize time to the hour for elecCostMap
       rewardArr = timeRewardMap.get(time); // map get returns array [lmpVal, reward]
@@ -75,18 +74,21 @@ public class RegulationMarket {
       pcp = rewardArr[1];
       r = rewardArr[2];
       performanceScore = rewardArr[3];
-      mileage = regD - regDprev > 0 ? (regD - regDprev) : -1 * (regD - regDprev);
+      //mileage = regD - regDprev > 0 ? (regD - regDprev) : -1 * (regD - regDprev);
+      mileage = RegDHandler.getCurrentMileage(time);
       if(mileage == 0) {
         System.out.println("NOTE: No change in regulation D signal! Mileage = 0.");
       }
-      //System.out.println("CCP:"+ccp+", PCP:"+pcp+", r:"+r+", performanceScore:"+performanceScore);
+      System.out.println("Reward = ("+ccp+" + ("+pcp+" * "+mileage+")) * "+r+" * "+performanceScore);
       reward = (ccp + (pcp * mileage)) * r * performanceScore;
     } 
     catch (NullPointerException e) {
       System.out.println(e.getMessage());
+      System.exit(0);
     }
     catch(Exception e) {
       e.printStackTrace();
+      System.exit(0);
     }
     return reward;
   }
