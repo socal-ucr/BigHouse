@@ -14,7 +14,7 @@ public class RegDHandler {
    * An array of file names in 'workloads/' from which to pull regulation-D signals
    * These files should contain 1800 entries (1 hour assuming interval of 2 seconds between each signal value)
    */
-  private static String[] regDFiles = {"regd_highreg","regd_midreg1","regd_midreg2"};
+  private static String[] regDFiles = {"regd_midreg1","regd_midreg2","regd_highreg"};
 
     /**
      * An array containing the timestamps present in the regulation-D signal file.
