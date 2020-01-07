@@ -158,7 +158,7 @@ public final class Experiment implements Serializable, Cloneable {
      */
     public void initialize() {
 	// Import data and populate class static structures
-	RegDHandler.getRegDFromFile("reg-d.csv"); 
+	RegDHandler.getRegDFromFile(RegDHandler.nextRegDFile()); 
 	RegulationMarket.importTraces();	
 
         this.dataCenter = this.experimentInput.getDataCenter();
@@ -237,23 +237,6 @@ public final class Experiment implements Serializable, Cloneable {
         //int orderOfMag = 5;
         long printSamples = 100000;//(long) Math.pow(10, orderOfMag);
         while (!stop) {
-	    //curTime = System.currentTimeMillis();
-	    //elapsedTime = curTime - startTime;
-	    /*(if(elapsedTime > checkRegDTime) {
-		regDSignal = RegDHandler.getRegDSignal(elapsedTime);
-		System.out.print("\nRegulation-D signal at ");
-		System.out.print((elapsedTime-1) / 1000);
-		System.out.print(" seconds is: ");
-		System.out.print(regDSignal);
-		System.out.print("\n");
-		//System.out.println("Simulation time: " + this.currentTime);
-		checkRegDTime += 5000;
-
-		dcConsumption = this.dataCenter.getDataCenterPowerConsumption();
-		System.out.println("Cost of operating: "+Double.toString(RegulationMarket.getCostofConsumption(dcConsumption,elapsedTime)));
-		System.out.println("Reward: "+Double.toString(RegulationMarket.getReward(regDSignal))+"\n");
-	    }*/
-	    //System.out.println("Simulation time: " + this.currentTime);
             Event currentEvent = this.eventQueue.nextEvent();
             this.currentTime = currentEvent.getTime();
             currentEvent.process();
@@ -270,10 +253,10 @@ public final class Experiment implements Serializable, Cloneable {
                 regDVal = RegDHandler.getRegDSignal(curTime);
                 dcConsumption = this.dataCenter.getDataCenterPowerConsumption();
               
-                System.out.println("\nRegulation D signal at " + curTime + " seconds is: " + regDVal + "\n");
-		System.out.println("Data center power consumption: " + dcConsumption);
-                System.out.println("Cost of operating: " + RegulationMarket.getCostofConsumption(dcConsumption, curTime)); 
-                System.out.println("Reward: " + RegulationMarket.getReward(curTime,regDVal,regDValPrev) + "\n");
+                System.out.println("v---------------------------v\nRegulation D signal at " + curTime + " seconds is: " + regDVal);
+		System.out.println("Data center power consumption (in MWatts): " + dcConsumption);
+                System.out.println("Cost of operating for this time: " + RegulationMarket.getCostofConsumption(dcConsumption, curTime)); 
+                System.out.println("Reward: " + RegulationMarket.getReward(curTime,regDVal,regDValPrev) + "\n^---------------------------^\n");
                 havePrinted = true;
                 regDValPrev = regDVal;
               }
