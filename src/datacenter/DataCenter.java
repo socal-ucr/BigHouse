@@ -324,13 +324,13 @@ public final class DataCenter implements Serializable {
    public double getDataCenterPowerConsumption() {
       double totalPowerConsumed = 0;
       Server server = null;
-      System.out.println("COMPUTING DC POWER CONSUMPTION FOR SERVER COUNT:"+this.servers.size());
+      //System.out.println("COMPUTING DC POWER CONSUMPTION FOR SERVER COUNT:"+this.servers.size());
       Iterator<Server> iter = this.servers.iterator(); 
       while(iter.hasNext()) {
          server = iter.next();
          totalPowerConsumed += server.getPowerConsumption(server.getInstantUtilization());
       }
-      System.out.println("DATACENTER POWER CONSUMPTION:"+totalPowerConsumed+"\n");
+      //System.out.println("DATACENTER POWER CONSUMPTION (MWatts):"+totalPowerConsumed+"\n");
       return totalPowerConsumed;
    }
 }

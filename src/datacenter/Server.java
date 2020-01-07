@@ -151,8 +151,9 @@ public class Server implements Powerable, Serializable {
     public boolean searchWorkload;
 
     /**
-     * A lookup table for power consumption given a utilization of 0-1; used 
-     * in getDynamicPower()
+     * A lookup table for power consumption given a utilization of 0-1; used in getDynamicPower()
+     * Keys: utilization values (0-1)
+     * Values: power consumption (in MWatts)
      */
      private static TreeMap<Double, Double> powerConsumptionTable = new TreeMap(); 
 
@@ -191,33 +192,9 @@ public class Server implements Powerable, Serializable {
 	this.peakEfficiency = 100.0/this.getMaxPower();
 	this.searchWorkload = this.experiment.getSearchWorkload();
 
-	/*
-	powerConsumptionTable.put(0.0,0.0);
-	powerConsumptionTable.put(0.0009, 21.5354);
-	powerConsumptionTable.put(0.0455, 36.0738);
-	powerConsumptionTable.put(0.0909, 44.552);
-	powerConsumptionTable.put(0.15, 49.2765);
-	powerConsumptionTable.put(0.1818, 51.9965);
-	powerConsumptionTable.put(0.2273, 54.597);
-	powerConsumptionTable.put(0.2727, 56.865);
-	powerConsumptionTable.put(0.3182, 58.6705);
-	powerConsumptionTable.put(0.3636, 60.8018);
-	powerConsumptionTable.put(0.4091, 62.6055);
-	powerConsumptionTable.put(0.4545, 64.8456);
-	powerConsumptionTable.put(0.5, 66.8099);
-	powerConsumptionTable.put(0.5455, 68.3646);
-	powerConsumptionTable.put(0.5909, 70.4242);
-	powerConsumptionTable.put(0.6364, 72.3198);
-	powerConsumptionTable.put(0.6818, 74.2039);
-	powerConsumptionTable.put(0.7273, 75.7969);
-	powerConsumptionTable.put(0.7727, 77.545);
-	powerConsumptionTable.put(0.8182, 79.578);
-	powerConsumptionTable.put(0.8636, 80.665);
-	powerConsumptionTable.put(0.9091, 82.0283);
-	powerConsumptionTable.put(0.9545, 83.3915);
-	powerConsumptionTable.put(1.0, 84.8922);
-	*/
+	// Power Consumption data comes from "Medusa Data" folder which has average power consumption in watts
 	powerConsumptionTable = DataImport.importPowerConsumptionData("AvgPower.csv");
+	powerConsumptionTable.put(0.0,0.0); // file data does not include util=0, so add manually
     }
 
     /**
@@ -585,11 +562,10 @@ public class Server implements Powerable, Serializable {
         return totalPower;
     }
 
-    //TODO get rid of magic numbers
     /**
-     * Gets the dynamic power consumption of the server.(in watts).
+     * Gets the dynamic power consumption of the server (in MWatts).
      *
-     * @return the dynamic power consumption of the server (in watts)
+     * @return the dynamic power consumption of the server (in MWatts)
      */
     public double getDynamicPower() {
         double dynamicPower = 0.0d;
@@ -615,29 +591,31 @@ public class Server implements Powerable, Serializable {
     }
 
     /**
-     * Gets power consumption of cpu given a utilization
-     *
-     * @return the power consumption of the cpu (in watts)
+     * Gets power consumption of server given a utilization
+     * @param util A utilization value between 0-1
+     * @return the power consumption of the cpu (in MWatts)
      */
      public double getPowerConsumption(double util) {
 	if(powerConsumptionTable.containsKey(util)) {
-		//System.out.println("Clean util:"+util);
 		return powerConsumptionTable.get(util);
 	}
 	else if(util > 1.0) {
 		//FIXME: How to handle util > 1.0?
 		System.out.print("WARNING: UNEXPECTED UTILIZATION GREATER THAN 1: " + util);
-		return 84.8922; // max cpu power consumption from table
+		System.exit(0);
+		return -1; // max cpu power consumption from table
 	}
 	else if(util < 0) {
 		//FIXME: How to handle util < 0?
 		System.out.print("WARNING: UNEXPECTED UTILIZATION LESS THAN 0: " + util);
-		return 0; 
+		System.exit(0);
+		return -1; 
 	}
 	else {
 	// we have an 'ugly' util value
 	// so return an approximated value assuming linear utilization-consumption relationship
 	        //System.out.println("ugly util:"+util);
+                //System.out.println(powerConsumptionTable.toString());
 		double arrOfLimits[] = getLimits(util);
 		double top = arrOfLimits[0];
 		double bottom = arrOfLimits[1];
@@ -655,8 +633,8 @@ public class Server implements Powerable, Serializable {
     /**
      * Helper function used in getPowerConsumption() that gets the nearest util values from 
      * powerConsumptionTable that are closest to <target>. 
-     *
-     * @return an array of doubles containing the closest util values greater than and lesss than <target>
+     * @param target The value for which we find upper and lower limits (or bounds)
+     * @return an array of doubles containing the closest util values greater than and less than <target>
      */
     private double[] getLimits(double target) {
 	double top = 0;
@@ -667,7 +645,6 @@ public class Server implements Powerable, Serializable {
 	// iterates through hashmap until current entry is larger than target, then
 	// saves current/previous entries as top/lower limits of target respectively
 	for(double mapEntry: powerConsumptionTable.keySet() ) {
-		//System.out.println("Check key:"+mapEntry);
 		if(mapEntry > target) {
 			top = mapEntry; 
 			bottom = prevMapEntry;
